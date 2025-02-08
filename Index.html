@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html>
+<!-- <head>
+      Since the pf is over,
+First of all I'm hiding all the forms and things except scoreboard -->
+
+<style>
+  .container {
+    visibility: visible;
+  }
+</style>
+
+<style>
+  body {
+    background-color: #fafafa;
+  }
+
+  .container {
+    margin: auto;
+  }
+
+  div[data-acc-content] {
+    display: none;
+  }
+
+  div[data-acc-step]:not(.open) {
+    background: #f2f2f2;
+  }
+
+  div[data-acc-step]:not(.open) h5 {
+    color: #777;
+  }
+
+  div[data-acc-step]:not(.open) .badge-primary {
+    background: #ccc;
+  }
+</style>
+
+<link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet"
+  integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+  integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
+
+<!--===============================================================================================-->
+
+
+
+<?!= include('CSS'); ?>
+<!-- See CSS.html file -->
+
+
+
+<?!= include('JavaScript'); ?>
+<!-- See JavaScript.html file -->
+
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.5.1/gsap.min.js"></script>
+
+<script>
+  window.addEventListener('load', () => {
+    const days = document.querySelector('.days')
+    const hours = document.querySelector('.hours')
+    const minutes = document.querySelector('.minutes')
+    const seconds = document.querySelector('.seconds')
+
+    let timeLeft = {
+      d: 0,
+      h: 0,
+      m: 0,
+      s: 0,
+    }
+
+    let totalSeconds;
+
+    function init() {
+      totalSeconds = Math.floor((new Date('11/7/2021') - new Date()) / 1000);
+      setTimeLeft();
+      let interval = setInterval(() => {
+        if (totalSeconds < 0) {
+          clearInterval(interval);
+        }
+        countTime();
+      }, 1000);
+    }
+
+    function countTime() {
+      if (totalSeconds > 0) {
+        --timeLeft.s;
+        if (timeLeft.m >= 0 && timeLeft.s < 0) {
+          timeLeft.s = 59;
+          --timeLeft.m;
+          if (timeLeft.h >= 0 && timeLeft.m < 0) {
+            timeLeft.m = 59;
+            --timeLeft.h;
+            if (timeLeft.d >= 0 && timeLeft.h < 0) {
+              timeLeft.h = 23;
+              --timeLeft.d;
+            }
+          }
+        }
+      }
+      --totalSeconds;
+      printTime();
+    }
+
+    function printTime() {
+      animateFlip(days, timeLeft.d);
+      animateFlip(hours, timeLeft.h);
+      animateFlip(minutes, timeLeft.m);
+      animateFlip(seconds, timeLeft.s);
+    }
+
+    function animateFlip(element, value) {
+      const valueInDom = element.querySelector('.bottom-back').innerText;
+      const currentValue = value < 10 ? '0' + value : '' + value;
+
+      if (valueInDom === currentValue) return;
+
+      element.querySelector('.top-back span').innerText = currentValue;
+      element.querySelector('.bottom-back span').innerText = currentValue;
+
+
+      gsap.to(element.querySelector('.top'), 0.7, {
+        rotationX: '-180deg',
+        transformPerspective: 300,
+        ease: Quart.easeOut,
+        onComplete: function () {
+          element.querySelector('.top').innerText = currentValue;
+          element.querySelector('.bottom').innerText = currentValue;
+          gsap.set(element.querySelector('.top'), {
+            rotationX: 0
+          });
+        }
+      });
+
+      gsap.to(element.querySelector('.top-back'), 0.7, {
+        rotationX: 0,
+        transformPerspective: 300,
+        ease: Quart.easeOut,
+        clearProps: 'all'
+      });
+
+    }
+
+
+
+    function setTimeLeft() {
+      timeLeft.d = Math.floor(totalSeconds / (60 * 60 * 24));
+      timeLeft.h = Math.floor(totalSeconds / (60 * 60) % 24);
+      timeLeft.m = Math.floor(totalSeconds / (60) % 60);
+      timeLeft.s = Math.floor(totalSeconds % 60);
+    }
+
+    init();
+  });
+</script>
+<!-- HERE IS A LOADING SPINNER IF YOU WANT -->
+ <div id="hidespinner" class="lds-ring"><div></div><div></div><div></div><div></div></div>
+
+
+<!--   
+<button type="button" class="btn btn-primary" data-toggle="modal" id ="fadebutton" data-target=".bd-example-modal-sm">स्कोरबोर्ड</button> -->
+
+
+<div class="container">
+
+  <!-- HERE IS THE FORM FOR DATA ENTRY -->
+
+  <div class="row">
+    <div class="col-lg-6">
+      <?!= include('Form'); ?>
+      <!-- See Form.html file -->
+
+
+      <form id="passForm" class="p-2 border border-light rounded bg-light"
+        onsubmit="return handleFirstFormSubmit(this)">
+        <!-- Call JavaScript function "handleFormSubmit" -->
+        <p class="h3 mb-3 text-center">Plan and Action</p>
+
+        <div id="message"></div>
+        <input type="text" id="RecId" name="RecId" value="" style="display: none">
+
+        <!--for information page accordian-->
+
+        <div class="list-group">
+          <div class="list-group-item py-3 open" data-acc-step="">
+            <div data-acc-content="" style="display: block;">
+              <div class="my-3">
+                <div class="form-group">
+                  <!-- Password Field -->
+                  <label for="password">Password</label>
+                  <input type="password" id="password" name="password" class="form-control"
+                        placeholder="Enter common password" required>
+                  <small id="passwordError" style="color: red; display: none;">Incorrect password!</small>
+                  <br>
+                  <div class="spinner-border text-primary" id="spinner1" style="display: none" role="status">
+                  <span class="sr-only">Loading...</span>
+                  </div>
+
+                </div>
+
+               
+
+              </div>
+
+            </div>
+
+          </div>
+        </div>
+      </form>
+
+
+
+      <div id="output"></div>
+    </div>
+  </div>
+</div>
+
+
+
+<script src="https://code.jquery.com/jquery-3.3.1.min.js"
+  integrity="sha384-tsQFqpEReu7ZLhBV2VZlAu7zcOV+rXbYlF2cqB8txI/8aZajjp4Bqd+V6D5IgvKT" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"
+  integrity="sha384-ZMP7rVo3mIykV+2+93UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"
+  integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+
+
+
+
+<script>
+
+function navigateTo(page) {
+        google.script.run.withSuccessHandler(url => {
+          window.location.href = url + "?page=" + page;
+        }).getScriptUrl();
+      }
+
+
+
+
+  $(function () {
+  $("#passForm").accWizard({
+    mode: 'wizard',
+    autoButtons: false, // Enable auto-generated buttons
+    stepNumberClass: null,
+    onSubmit: function () {
+      // alert('Form submitted!');
+      return true;
+    }
+  });
+
+  // Password validation logic
+  $("#group, #password").on("input", function () {
+    var group = $("#group").val();
+    var password = $("#password").val();
+    var passwordError = $("#passwordError");
+    var spinner = $("#spinner1");
+
+
+    // Define correct passwords for each group
+ 
+
+    // Check if password is correct
+    if (password ==="0") {
+      passwordError.hide();
+         
+      navigateTo('FinalForm');
+      spinner1.style.display = "block";
+
+      return true;
+    } else {
+      passwordError.show(); // Show error message
+      
+    }
+  });
+});
+
+
+
+
+</script>
+
+
+
+<script type="text/javascript">
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-36251023-1']);
+  _gaq.push(['_setDomainName', 'jqueryscript.net']);
+  _gaq.push(['_trackPageview']);
+
+  (function () {
+    var ga = document.createElement('script');
+    ga.type = 'text/javascript';
+    ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0];
+    s.parentNode.insertBefore(ga, s);
+  })();
+</script>
+<?!= include('TableScript'); ?>
+<!-- Scripts for data table beauty  -->
+<script>
+  $(window).on('load', function () {
+  });
+</script>
+</body>
+
+</html>
